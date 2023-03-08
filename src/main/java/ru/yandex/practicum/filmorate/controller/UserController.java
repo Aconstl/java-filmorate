@@ -6,18 +6,21 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.*;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Integer, User> users = new HashMap<>();
     private int idUser = 1;
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<User> getAll() {
             log.trace("Вывод списка всех пользователей");
             List<User> usList = new ArrayList<>();
             users.forEach((key, value) -> usList.add(value));
@@ -25,7 +28,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user) throws ValidationException {
+    public User add(@Valid  @RequestBody User user) {
         log.trace("Добавление нового пользователя");
         if (isValidate(user)) {
             if (user.getName() == null || user.getName().isBlank()) {
@@ -41,7 +44,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) throws ValidationException {
+    public User update(@Valid @RequestBody User user) {
         log.trace("Обновление пользователя");
         if (user.getId() == 0 || !users.containsKey(user.getId())) {
             log.error("Ошибка обновления id № {}", user.getId());
@@ -59,20 +62,11 @@ public class UserController {
         return user;
     }
 
-    private boolean isValidate(User user) throws  ValidationException {
-            if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-                log.error("Ошибка валидации id № {} : неккоректный email", user.getId());
-                throw new ValidationException("Неверно введена электронная почта");
-            }
-            if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-                log.error("Ошибка валидации id № {} : неккоректный login", user.getId());
-                throw new ValidationException("Неверно введен логин");
-            }
-            if (user.getBirthday().isAfter(LocalDate.now())) {
-                log.error("Ошибка валидации id № {} : неккоректный birthday", user.getId());
-                throw new ValidationException("Дата рождения не может быть в будущем");
-            }
-            return true;
+    private boolean isValidate(User user) {
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            log.error("Ошибка валидации id № {} : неккоректный birthday", user.getId());
+            throw new ValidationException("Дата рождения не может быть в будущем");
+        }
+        return true;
     }
-
 }

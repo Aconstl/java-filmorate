@@ -1,26 +1,27 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.*;
-import org.springframework.util.Assert;
-import ru.yandex.practicum.filmorate.FilmorateApplication;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.ValidatorFactory;
+import javax.validation.Validator;
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FIlmControllerTest {
-    FilmController filmController;
+
+    private Validator validator;
     Film film;
     @BeforeEach
-    public void beforeAll() {
-        filmController = new FilmController();
+    public void beforeEach() {
+       ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+
         film = Film.builder()
                 .name("Кино")
                 .description("описание кино")
@@ -29,79 +30,59 @@ public class FIlmControllerTest {
                 .build();
     }
 
-
-
     @Test
     public void nameFilmTest() throws ValidationException {
-        assertTrue(filmController.getAllFilms().isEmpty());
-        Film filmAddTrue = filmController.addFilm(film);
-        assertEquals(filmAddTrue, film);
+        Set<ConstraintViolation<Film>> violation = validator.validate(film);
+        assertTrue(violation.isEmpty());
 
         film.setName("");
-        ValidationException ve = assertThrows(ValidationException.class,
-                () -> filmController.addFilm(film));
-        assertEquals(ve.getMessage(),"Имя отсутствует");
-
-        film.setName("Обновленное имя");
-        Film filmUpdTrue = filmController.updateFilm(film);
-        assertEquals(filmUpdTrue, film);
-
-        filmUpdTrue.setName("");
-        ValidationException ve1 = assertThrows(ValidationException.class,
-                () -> filmController.updateFilm(filmUpdTrue));
-        assertEquals(ve1.getMessage(),"Имя отсутствует");
+        Set<ConstraintViolation<Film>> violationFalse = validator.validate(film);
+        assertFalse(violationFalse.isEmpty());
     }
+
 
     @Test
     public void descriptionFilmTest() throws ValidationException {
-        Film filmAddTrue = filmController.addFilm(film);
-        assertEquals(filmAddTrue, film);
-        film.setDescription("");
-        Film notDesrpFilm = filmController.addFilm(film);
-        assertEquals(notDesrpFilm, film);
+        Set<ConstraintViolation<Film>> violation = validator.validate(film);
+        assertTrue(violation.isEmpty());
 
-        film.setDescription("описание кино набиваю текст до 200 для проверки здесь могла быть ваша реклама однако" +
-                        "никто не делает такой код но я сделал передаю всем привет тем кто немного устал но держится " +
-                        "завтра буде лучше чем вче");
-        ValidationException ve = assertThrows(ValidationException.class,
-                () -> filmController.addFilm(film));
-        assertEquals(ve.getMessage(),"Описание превышает допустимых размеров (не более 200 символов)");
+        film.setDescription("1".repeat(201));
+        Set<ConstraintViolation<Film>> violationFalse = validator.validate(film);
+        assertFalse(violationFalse.isEmpty());
 
-        film.setDescription("описание кино набиваю текст до 200 для проверки здесь могла быть ваша реклама однако" +
-                "никто не делает такой код но я сделал передаю всем привет тем кто немного устал но держится " +
-                "завтра буде лучше чем вч");
-        Film trueFilm = filmController.addFilm(film);
-        assertEquals(trueFilm, film);
+        film.setDescription("1".repeat(200));
+        Set<ConstraintViolation<Film>> violationTrue = validator.validate(film);
+        assertTrue(violationTrue.isEmpty());
     }
 
     @Test
     public void dataReliseFilmTest() throws ValidationException {
-        Film filmAddTrue = filmController.addFilm(film);
+        FilmController filmController = new FilmController();
+
+        Film filmAddTrue = filmController.add(film);
         assertEquals(filmAddTrue, film);
 
         film.setReleaseDate(LocalDate.of(1895,12,22));
         ValidationException ve1 = assertThrows(ValidationException.class,
-                () -> filmController.addFilm(film));
+                () -> filmController.add(film));
         assertEquals(ve1.getMessage(),"Дата релиза некорректно указана");
 
         film.setReleaseDate(LocalDate.now());
-        Film trueFilm = filmController.addFilm(film);
+        Film trueFilm = filmController.add(film);
         assertEquals(trueFilm, film);
     }
 
     @Test
     public void durationFilmTest() throws ValidationException {
-        Film filmAddTrue = filmController.addFilm(film);
-        assertEquals(filmAddTrue, film);
-
-        film.setDuration(-1);
-        ValidationException ve1 = assertThrows(ValidationException.class,
-                () -> filmController.addFilm(film));
-        assertEquals(ve1.getMessage(),"Продолжительность фильма равна или меньше 0");
+        Set<ConstraintViolation<Film>> violation = validator.validate(film);
+        assertTrue(violation.isEmpty());
 
         film.setDuration(0);
-        ValidationException ve2 = assertThrows(ValidationException.class,
-                () -> filmController.addFilm(film));
-        assertEquals(ve1.getMessage(),"Продолжительность фильма равна или меньше 0");
+        Set<ConstraintViolation<Film>> violationFalse = validator.validate(film);
+        assertFalse(violationFalse.isEmpty());
+
+        film.setDuration(1);
+        Set<ConstraintViolation<Film>> violationTrue = validator.validate(film);
+        assertTrue(violationTrue.isEmpty());
     }
 }
