@@ -3,6 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.*;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -57,7 +62,11 @@ public class FIlmControllerTest {
 
     @Test
     public void dataReliseFilmTest() throws ValidationException {
-        FilmController filmController = new FilmController();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        UserStorage userStorage = new InMemoryUserStorage();
+        FilmService filmService = new FilmService(filmStorage,userStorage);
+        FilmController filmController = new FilmController(filmStorage,filmService);
 
         Film filmAddTrue = filmController.add(film);
         assertEquals(filmAddTrue, film);
