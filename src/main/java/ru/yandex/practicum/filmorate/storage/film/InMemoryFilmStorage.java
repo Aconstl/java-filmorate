@@ -19,9 +19,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getAll() {
         log.trace("Вывод списка всех фильмов");
-        List<Film> filmsList = new ArrayList<>();
-        films.forEach((key, value) -> filmsList.add(value));
-        return filmsList;
+        return new ArrayList<>(films.values());
     }
 
     @Override
@@ -41,12 +39,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film update(Film film ) {
         log.trace("Обновление фильма");
         if (film.getId() ==0 || !films.containsKey(film.getId())) {
-            log.error("Фильм \"{}\" (id №{}) не найден", film.getName(),film.getId());
-            throw new IllegalArgumentException("Фильм для обновления не найден");
+            throw new IllegalArgumentException("Фильм c id № " + film.getId() + " не найден");
         } else if (isValidate(film)) {
-            if (film.getLikes() == null) {
-                film.setLikes(new HashSet<>());
-            }
+            Set<Integer> likesOldVersionFilm = films.get(film.getId()).getLikes();
+            film.setLikes(new HashSet<>(likesOldVersionFilm));
             films.put(film.getId(), film);
             log.debug("Фильм \"{}\" (id №{}) обновлен", film.getName(),film.getId());
         }
@@ -57,19 +53,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film get (Integer id) {
         log.trace("Получение фильма");
         if (id == null) {
-            log.error("ID фильма указан неверно");
             throw new NullPointerException("ID фильма указан неверно");
         } else if (!films.containsKey(id)) {
-            log.error("Фильм не найден");
-            throw new IllegalArgumentException("Фильм не найден");
+            throw new IllegalArgumentException("Фильм c id № " + id + " не найден");
         }
         log.debug("Фильм \"{}\" (id №{}) получен", films.get(id).getName(),id);
         return films.get(id);
     }
     private boolean isValidate(Film film) {
         if (film.getReleaseDate().isBefore(BEGIN_FILMS)) {
-            log.error("Ошибка валидации id № {} : дата релиза некорректная", film.getId());
-            throw new ValidationException("Дата релиза некорректно указана");
+            throw new ValidationException("Дата релиза некорректно указана (id Фильма № "+ film.getId() + " )");
         }
         return true;
     }

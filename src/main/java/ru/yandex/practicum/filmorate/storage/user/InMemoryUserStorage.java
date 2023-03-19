@@ -35,10 +35,7 @@ public class InMemoryUserStorage implements UserStorage {
                         user.getId(), user.getLogin());
                 user.setName(user.getLogin());
             }
-            if (user.getFriends() == null) {
-                log.warn("Пользователь id № {} не имеет список друзей ", user.getId());
-                user.setFriends(new HashSet<>());
-            }
+            user.setFriends(new HashSet<>());
             user.setId(idUser++);
             users.put(user.getId(), user);
             log.debug("Пользователь id № {} добавлен", user.getId());
@@ -50,7 +47,6 @@ public class InMemoryUserStorage implements UserStorage {
     public User update(User user) {
         log.trace("Обновление пользователя");
         if (user.getId() == 0 || !users.containsKey(user.getId())) {
-            log.error("Ошибка обновления id № {}", user.getId());
             throw new IllegalArgumentException(String.format("Пользователь c id № %d для обновления данных не найден",
                     user.getId()));
         }
@@ -59,10 +55,8 @@ public class InMemoryUserStorage implements UserStorage {
                 log.warn("Пользователь id № {} не имеет имя, принят login пользователя \"{}\"", user.getId(), user.getLogin());
                 user.setName(user.getLogin());
             }
-            if (user.getFriends() == null) {
-                log.warn("Пользователь id № {} не имеет список друзей ", user.getId());
-                user.setFriends(new HashSet<>());
-            }
+            Set<Integer> friendsOldVersionUser = users.get(user.getId()).getFriends();
+            user.setFriends(new HashSet<>(friendsOldVersionUser));
             users.put(user.getId(), user);
             log.debug("Данные пользователя id № {} обновлены ", user.getId());
         }
@@ -75,7 +69,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (id == null) {
             throw new NullPointerException("ID пользователя указан неверно");
         } else if (!users.containsKey(id)){
-            throw new IllegalArgumentException("Пользователь не найден");
+            throw new IllegalArgumentException("Пользователь c ID № " + id + " не найден");
         }
         log.debug("Пользователь с id №{} получен", users.get(id).getName());
         return  users.get(id);
@@ -89,7 +83,7 @@ public class InMemoryUserStorage implements UserStorage {
         List<User> listFriends = new ArrayList<>();
         for (Integer idFriend : listIdFriends) {
             if (!users.containsKey(idFriend)) {
-                throw new IllegalArgumentException("Пользователь с id "+ idFriend + "имеется в списпе друзей, но не в общем списке");
+                throw new IllegalArgumentException("Пользователь с id "+ idFriend + "имеется в списке друзей, но не в общем списке");
             }
             listFriends.add(users.get(idFriend));
         }
@@ -98,8 +92,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     private boolean isValidate(User user) {
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Ошибка валидации id № {} : неккоректный birthday", user.getId());
-            throw new ValidationException("Дата рождения не может быть в будущем");
+            throw new ValidationException("Дата рождения не может быть в будущем (пользователь № " + user.getId() + ")");
         }
         return true;
     }

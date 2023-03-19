@@ -74,7 +74,7 @@ public class FIlmControllerTest {
         film.setReleaseDate(LocalDate.of(1895,12,22));
         ValidationException ve1 = assertThrows(ValidationException.class,
                 () -> filmController.add(film));
-        assertEquals(ve1.getMessage(),"Дата релиза некорректно указана");
+        assertEquals(ve1.getMessage(),"Дата релиза некорректно указана (id Фильма № " + film.getId() + " )");
 
         film.setReleaseDate(LocalDate.now());
         Film trueFilm = filmController.add(film);

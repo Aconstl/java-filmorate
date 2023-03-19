@@ -23,7 +23,7 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public String addFriends(Integer id, Integer friendId) {
+    public List<Integer> addFriends(Integer id, Integer friendId) {
         log.trace("Добавление в друзья");
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
@@ -32,10 +32,10 @@ public class UserService {
             user2.getFriends().add(user1.getId());
             log.debug("Пользователи с id №{} и №{} стали друзьями", id,friendId);
         }
-        return "стали друзьями";
+        return new ArrayList<>(user1.getFriends());
     }
 
-    public String removeFriend(Integer id, Integer friendId) {
+    public List<Integer> removeFriend(Integer id, Integer friendId) {
         log.trace("Удаление из друзей");
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
@@ -44,7 +44,7 @@ public class UserService {
             user2.getFriends().remove(user1.getId());
             log.debug("Пользователи с id №{} и №{} перестали быть друзьями", id,friendId);
         }
-        return "перестали быть друзьями";
+        return new ArrayList<>(user1.getFriends());
     }
 
     public List<User> getJointFriends(Integer id, Integer friendId) {
@@ -66,8 +66,7 @@ public class UserService {
 
     private boolean isNotEquals(User user1,User user2) {
         if (user1.equals(user2)) {
-            log.error("Ошибка валидации : пользователь пыается совершить действие с одним пользователем");
-            throw new ValidationException("Пользователь не может совершать действие с самим собой");
+            throw new ValidationException("Пользователь не может совершать действие с самим собой (id № "+ user1.getId() + " )");
         }
         return true;
     }
