@@ -1,7 +1,7 @@
 # java-filmorate
 Проект Filmorate
 
-![Блок схема](C:\Users\subti\sprints\java-filmorate\diagram.png)
+![Блок схема](https://github.com/Aconstl/java-filmorate/blob/SQL_peer-to-peer/diagram.png)
 
 ### Film
 ```
