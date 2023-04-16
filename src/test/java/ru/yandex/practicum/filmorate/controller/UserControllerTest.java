@@ -24,6 +24,7 @@ public class UserControllerTest {
 
     private Validator validator;
     User user;
+
     @BeforeEach
     public void beforeAll() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -33,7 +34,7 @@ public class UserControllerTest {
                 .email("aconstl@gmail.com")
                 .login("mrAlex")
                 .name("alexey")
-                .birthday(LocalDate.of(1998,9,11))
+                .birthday(LocalDate.of(1998, 9, 11))
                 .build();
     }
 
@@ -66,7 +67,7 @@ public class UserControllerTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
         UserService userService = new InMemoryUserService(userStorage);
-        UserController userController = new UserController(userStorage,userService);
+        UserController userController = new UserController(userStorage, userService);
 
 
         User userAddTrue = userController.add(user);
@@ -79,7 +80,7 @@ public class UserControllerTest {
         user.setBirthday(LocalDate.now().plusDays(1));
         ValidationException ve1 = assertThrows(ValidationException.class,
                 () -> userController.add(user));
-        assertEquals(ve1.getMessage(),"Дата рождения не может быть в будущем (пользователь № " + user.getId() + ")");
+        assertEquals(ve1.getMessage(), "Дата рождения не может быть в будущем (пользователь № " + user.getId() + ")");
     }
 
     @Test
@@ -87,7 +88,7 @@ public class UserControllerTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
         UserService userService = new InMemoryUserService(userStorage);
-        UserController userController = new UserController(userStorage,userService);
+        UserController userController = new UserController(userStorage, userService);
 
         User userAddTrue = userController.add(user);
         assertEquals(userAddTrue.getName(), user.getName());

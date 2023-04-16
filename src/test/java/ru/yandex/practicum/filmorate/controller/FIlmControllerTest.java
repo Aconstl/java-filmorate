@@ -24,15 +24,16 @@ public class FIlmControllerTest {
 
     private Validator validator;
     Film film;
+
     @BeforeEach
     public void beforeEach() {
-       ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
 
         film = Film.builder()
                 .name("Кино")
                 .description("описание кино")
-                .releaseDate(LocalDate.of(1895,12,28))
+                .releaseDate(LocalDate.of(1895, 12, 28))
                 .duration(20)
                 .build();
     }
@@ -67,16 +68,16 @@ public class FIlmControllerTest {
 
         FilmStorage filmStorage = new InMemoryFilmStorage();
         UserStorage userStorage = new InMemoryUserStorage();
-        FilmService filmService = new InMemoryFilmService(filmStorage,userStorage);
-        FilmController filmController = new FilmController(filmStorage,filmService);
+        FilmService filmService = new InMemoryFilmService(filmStorage, userStorage);
+        FilmController filmController = new FilmController(filmStorage, filmService);
 
         Film filmAddTrue = filmController.add(film);
         assertEquals(filmAddTrue, film);
 
-        film.setReleaseDate(LocalDate.of(1895,12,22));
+        film.setReleaseDate(LocalDate.of(1895, 12, 22));
         ValidationException ve1 = assertThrows(ValidationException.class,
                 () -> filmController.add(film));
-        assertEquals(ve1.getMessage(),"Дата релиза некорректно указана (id Фильма № " + film.getId() + " )");
+        assertEquals(ve1.getMessage(), "Дата релиза некорректно указана (id Фильма № " + film.getId() + " )");
 
         film.setReleaseDate(LocalDate.now());
         Film trueFilm = filmController.add(film);
