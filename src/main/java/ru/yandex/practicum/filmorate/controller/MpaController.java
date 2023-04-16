@@ -15,12 +15,15 @@ import java.util.List;
 @RequestMapping("/mpa")
 @RequiredArgsConstructor
 public class MpaController {
+
     @Qualifier("dbMpa")
     private final DbMpa dbMpa;
+
     @GetMapping
     public List<Mpa> getAll() {
         return dbMpa.getAll();
     }
+
     @GetMapping ("/{id}")
     public Mpa get(@PathVariable Integer id){
         return dbMpa.get(id);
