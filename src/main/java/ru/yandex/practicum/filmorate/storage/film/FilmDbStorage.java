@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.storage.film.mpa.DbMpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -39,15 +39,19 @@ public class FilmDbStorage implements FilmStorage {
                 film.setLikes(new HashSet<>());
             }
 
-            int id = jdbcTemplate.update("INSERT INTO FILMS (NAME,DESCRIPRION,RELEASEDATA,DURATION,RATING) " +
+            jdbcTemplate.update("INSERT INTO FILMS (NAME,DESCRIPRION,RELEASEDATA,DURATION,MPA) " +
                             "VALUES (?,?,?,?,?)", film.getName(), film.getDescription(),
-                            film.getReleaseDate(), film.getDuration(), Rating.exportRating(film.getRating()));
-            film.setId(id);
+                            film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
 
-            connectFilmGenre(film);
+            film.setId(getMaxIdFilm());
+            if (film.getGenres() != null) {
+                connectFilmGenre(film);
+            } else {
+                film.setGenres(new HashSet<>());
+            }
         }
         log.debug("Фильм \"{}\" (id №{}) добавлен", film.getName(),film.getId());
-        return film;
+        return get(film.getId());
     }
     @Override
     public Film update(Film film) {
@@ -59,14 +63,18 @@ public class FilmDbStorage implements FilmStorage {
             disconnectFilmGenre(film);
 
             jdbcTemplate.update("UPDATE FILMS " +
-                "SET NAME = ?, DESCRIPRION = ?, RELEASEDATA = ?, DURATION = ?, RATING = ? WHERE FILM_ID = '?' ",
+                "SET NAME = ?, DESCRIPRION = ?, RELEASEDATA = ?, DURATION = ?, MPA = ? WHERE FILM_ID = ? ",
                 film.getName(),film.getDescription(),film.getReleaseDate(), film.getDuration(),
-                Rating.exportRating(film.getRating()), film.getId());
+                film.getMpa().getId(), film.getId());
 
-            connectFilmGenre(film);
+            if (film.getGenres() != null) {
+                connectFilmGenre(film);
+            } else {
+                film.setGenres(new HashSet<>());
+            }
         }
         log.debug("Фильм \"{}\" (id №{}) обновлен", film.getName(),film.getId());
-        return film;
+        return get(film.getId());
     }
 
     @Override
@@ -91,17 +99,22 @@ public class FilmDbStorage implements FilmStorage {
         Film film = Film.builder()
                 .id(filmRows.getInt("FILM_ID"))
                 .name(filmRows.getString("NAME"))
+                .description(filmRows.getString("DESCRIPRION"))
                 .releaseDate(filmRows.getObject("RELEASEDATA", LocalDate.class))
                 .duration(filmRows.getLong("DURATION"))
-                .rating(Rating.importRating(filmRows.getString("RATING")))
+                .mpa(new DbMpa(jdbcTemplate).get((filmRows.getInt("MPA"))))
                 .build();
 
-        String sqlGenre = "SELECT gf.GENRE_ID\n" +
+        String sqlGenre = "SELECT *\n" +
+                "FROM GENRE g \n" +
+                "WHERE g.GENRE_ID IN (\n" +
+                "\tSELECT gf.GENRE_ID\n" +
                 "\tFROM GENRE_FILM AS gf \n" +
-                "\tWHERE gf.Film_id = ?";
+                "\tWHERE gf.Film_id = ?)";
         List <Genre> genres = jdbcTemplate.query(sqlGenre,
-                (rs, rowNum) -> Genre.importGenre(rs.getInt("GENRE_ID")), film.getId());
-        film.setGenre(genres);
+                (rs, rowNum) -> new Genre(rs.getInt("GENRE_ID"),rs.getString("NAME")),
+                film.getId());
+        film.setGenres(new HashSet<>(genres));
 
         String sqlLikes = "SELECT USER_ID \n" +
                 "\tFROM LIKES l \n" +
@@ -113,15 +126,25 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
+    private int getMaxIdFilm() {
+        String sqlgetId = "SELECT FILM_ID \n" +
+                "FROM FILMS u \n" +
+                "ORDER BY FILM_ID DESC \n" +
+                "LIMIT 1";
+
+        List <Integer> id = jdbcTemplate.query(sqlgetId, (rs, rowNum) -> rs.getInt("FILM_ID"));
+        return id.get(0);
+    }
+
     private void disconnectFilmGenre(Film film) {
             jdbcTemplate.update("DELETE FROM GENRE_FILM WHERE FILM_ID = ?", film.getId());
         log.trace("Связь жанров в фильме id №{} разорвана", film.getId());
     }
 
     private void connectFilmGenre(Film film){
-        for (Genre genre : film.getGenre()) {
+        for (Genre genre : film.getGenres()) {
             jdbcTemplate.update("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) VALUES ( ?,? )",
-                    film.getId(), Genre.exportGenre(genre));
+                    film.getId(), genre.getId());
         }
         log.trace("Связь жанров в фильме id №{} установлена", film.getId());
     }

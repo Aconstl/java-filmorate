@@ -37,10 +37,10 @@ public class UserDbStorage implements UserStorage {
                 user.setName(user.getLogin());
             }
 
-            int id = jdbcTemplate.update("INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY) VALUES (?,?,?,?)",
+            jdbcTemplate.update("INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY) VALUES (?,?,?,?)",
                     user.getEmail(), user.getLogin(), user.getName(),user.getBirthday());
 
-            user.setId(id);
+            user.setId(getMaxIdUser());
         }
         log.debug("Пользователь id № {} добавлен", user.getId());
         return get(user.getId());
@@ -60,7 +60,7 @@ public class UserDbStorage implements UserStorage {
             }
 
             jdbcTemplate.update("UPDATE USERS " +
-                            "SET EMAIL = ?, LOGIN = ?, NAME = ?, BIRTHDAY = ? WHERE USER_ID = '?' ",
+                            "SET EMAIL = ?, LOGIN = ?, NAME = ?, BIRTHDAY = ? WHERE USER_ID = ? ",
                             user.getEmail(), user.getLogin(),user.getName(), user.getBirthday(), user.getId());
 
             log.debug("Данные пользователя id № {} обновлены ", user.getId());
@@ -95,12 +95,10 @@ public class UserDbStorage implements UserStorage {
                 "WHERE u.USER_ID IN (\n" +
                 "\tSELECT USERSECOND_ID " +
                 "\tFROM FRIENDS \n" +
-                "\tWHERE USERFIRST_ID = 1 AND IS_CONFIRM = TRUE);";
+                "\tWHERE USERFIRST_ID = ?) ";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id);
     }
-
-
 
     public User makeUser(ResultSet userRows) throws SQLException {
         User user = User.builder()
@@ -124,14 +122,26 @@ public class UserDbStorage implements UserStorage {
         HashMap<Integer, Boolean> map = new HashMap<>();
         SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends,user.getId());
         //ВОЗМОЖНА ОШИБКА?!
-        while(rsMap.next()){
+        while(rsMap.next()) {
             map.put(rsMap.getInt("USERSECOND_ID"),rsMap.getBoolean("IS_CONFIRM"));
         }
+
+
         user.setFriends(map);
+
 
         return user;
     }
 
+    private int getMaxIdUser() {
+        String sqlgetId = "SELECT USER_ID \n" +
+                "FROM USERS u \n" +
+                "ORDER BY USER_ID DESC \n" +
+                "LIMIT 1";
+
+        List <Integer> id = jdbcTemplate.query(sqlgetId, (rs, rowNum) -> rs.getInt("USER_ID"));
+        return id.get(0);
+    }
     private boolean isValidate(User user) {
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем (пользователь № " + user.getId() + ")");

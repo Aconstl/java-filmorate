@@ -21,7 +21,7 @@ public class UserDbService implements UserService {
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
         if (isNotEquals(user1.getId(),user2.getId())) {
-            if (user1.getFriends().containsKey(friendId)) {
+            if (user1.getFriends().containsKey(user2.getId())) {
                 throw new IllegalArgumentException(String.format("Пользователь %s уже имеет в списке друзей %s",
                         user1.getLogin(),user2.getLogin()));
             }
@@ -60,14 +60,15 @@ public class UserDbService implements UserService {
                     "WHERE USER_ID IN (\n" +
                     "SELECT f1.USERSECOND_ID \n" +
                     "\tFROM FRIENDS f1 \n" +
-                    "\tINNER JOIN FRIENDS f2 ON f2.USERFIRST_ID = 1 AND\n" +
-                    "\t\tf2.USERSECOND_ID = f1.USERSECOND_ID  AND f2.IS_CONFIRM = TRUE\n" +
-                    "\t\tWHERE f1.USERFIRST_ID  = 2 AND f1.IS_CONFIRM = TRUE);";
+                    "\tINNER JOIN FRIENDS f2 ON f2.USERFIRST_ID = ? AND\n" +
+                    "\t\tf2.USERSECOND_ID = f1.USERSECOND_ID  \n" +
+                    "\t\tWHERE f1.USERFIRST_ID  = ? );";
 
             List<User> joinFriends = jdbcTemplate.query(sql,(rs, rowNum) -> userStorage.makeUser(rs),id,friendId);
             log.debug("Выведены общие друзья пользователей с id №{} и №{}", id,friendId);
             return joinFriends;
     }
+
 
 
     private boolean isNotEquals(Integer id1, Integer id2) {

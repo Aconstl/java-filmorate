@@ -27,9 +27,9 @@ public class Film {
     @Min(1)
     private long duration;
 
-    private List<Genre> genre;
+    private Set<Genre> genres;
     @NotNull
-    private Rating rating;
+    private Mpa mpa;
 
     private Set<Integer> likes;
 
