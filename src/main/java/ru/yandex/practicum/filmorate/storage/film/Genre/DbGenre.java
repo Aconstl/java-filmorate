@@ -17,6 +17,7 @@ public class DbGenre {
     public DbGenre(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
     public Genre get(Integer id) {
         String sqlGetAll = "SELECT * FROM GENRE WHERE GENRE_ID = ?";
          List<Genre> genres = jdbcTemplate.query(sqlGetAll, (rs,rowNum) -> getGenre(rs), id);
@@ -33,7 +34,7 @@ public class DbGenre {
         return jdbcTemplate.query(sqlGetAll, (rs,rowNum) -> getGenre(rs));
     }
 
-    private Genre getGenre (ResultSet rs) throws SQLException {
+    private Genre getGenre(ResultSet rs) throws SQLException {
         return new Genre(rs.getInt("GENRE_ID"),rs.getString("NAME"));
     }
 }
