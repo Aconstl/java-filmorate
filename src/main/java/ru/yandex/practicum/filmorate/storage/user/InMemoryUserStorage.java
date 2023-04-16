@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -11,9 +9,9 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Component
+@Qualifier("memoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Integer, User> users = new HashMap<>();
 
     private int idUser = 1;
@@ -35,7 +33,7 @@ public class InMemoryUserStorage implements UserStorage {
                         user.getId(), user.getLogin());
                 user.setName(user.getLogin());
             }
-            user.setFriends(new HashSet<>());
+            user.setFriends(new HashMap<>());
             user.setId(idUser++);
             users.put(user.getId(), user);
             log.debug("Пользователь id № {} добавлен", user.getId());
@@ -55,8 +53,8 @@ public class InMemoryUserStorage implements UserStorage {
                 log.warn("Пользователь id № {} не имеет имя, принят login пользователя \"{}\"", user.getId(), user.getLogin());
                 user.setName(user.getLogin());
             }
-            Set<Integer> friendsOldVersionUser = users.get(user.getId()).getFriends();
-            user.setFriends(new HashSet<>(friendsOldVersionUser));
+            Map<Integer,Boolean> friendsOldVersionUser = users.get(user.getId()).getFriends();
+            user.setFriends(new HashMap<>(friendsOldVersionUser));
             users.put(user.getId(), user);
             log.debug("Данные пользователя id № {} обновлены ", user.getId());
         }
@@ -77,9 +75,9 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Integer id){
-        log.trace("Вывод общих друзей");
+        log.trace("Вывод друзей");
         User user = this.get(id);
-        List <Integer> listIdFriends = new ArrayList<>(user.getFriends());
+        List <Integer> listIdFriends = new ArrayList<>(user.getFriends().keySet());
         List<User> listFriends = new ArrayList<>();
         for (Integer idFriend : listIdFriends) {
             if (!users.containsKey(idFriend)) {

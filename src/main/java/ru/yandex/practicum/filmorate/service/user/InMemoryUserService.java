@@ -1,25 +1,23 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.user;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class UserService {
+@Qualifier ("memoryUserService")
+public class InMemoryUserService implements UserService {
     private final UserStorage userStorage;
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
 
     @Autowired
-    public UserService(UserStorage userStorage){
+    public InMemoryUserService(@Qualifier("memoryUserStorage") UserStorage userStorage){
         this.userStorage = userStorage;
     }
 
@@ -28,11 +26,16 @@ public class UserService {
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
         if (isNotEquals(user1,user2)) {
-            user1.getFriends().add(user2.getId());
-            user2.getFriends().add(user1.getId());
+            boolean isMutually = false;
+            if (user2.getFriends().containsKey(user1.getId())) {
+                user2.getFriends().put(user1.getId(),true);
+                isMutually = true;
+            }
+            user1.getFriends().put(user2.getId(),isMutually);
+
             log.debug("Пользователи с id №{} и №{} стали друзьями", id,friendId);
         }
-        return new ArrayList<>(user1.getFriends());
+        return new ArrayList<>(user1.getFriends().keySet());
     }
 
     public List<Integer> removeFriend(Integer id, Integer friendId) {
@@ -44,7 +47,7 @@ public class UserService {
             user2.getFriends().remove(user1.getId());
             log.debug("Пользователи с id №{} и №{} перестали быть друзьями", id,friendId);
         }
-        return new ArrayList<>(user1.getFriends());
+        return new ArrayList<>(user1.getFriends().keySet());
     }
 
     public List<User> getJointFriends(Integer id, Integer friendId) {
@@ -53,8 +56,14 @@ public class UserService {
         User user2 = userStorage.get(friendId);
         List<User> JointFriends = new ArrayList<>();
         if (isNotEquals(user1,user2)) {
-            Set<Integer> joint = new HashSet<>(user1.getFriends());
-            Set<Integer> jointFriend = user2.getFriends();
+            List<Integer> joint = user1.getFriends().entrySet().stream()
+                    .filter(Map.Entry::getValue)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+            List<Integer> jointFriend = user2.getFriends().entrySet().stream()
+                    .filter(Map.Entry::getValue)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
             joint.retainAll(jointFriend);
             for (Integer idUser : joint) {
                 JointFriends.add(userStorage.get(idUser));

@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.List;
 
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
@@ -15,7 +17,10 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class FilmController {
 
+    @Qualifier ("dbFilmStorage")
     private final FilmStorage filmStorage;
+
+    @Qualifier("dbFilmService")
     private final FilmService filmService;
 
     @GetMapping
@@ -52,5 +57,4 @@ public class FilmController {
     public List<Film> bestFilms(@RequestParam(value = "count", defaultValue = "10") Integer count) {
         return filmService.bestFilms(count);
     }
-
 }

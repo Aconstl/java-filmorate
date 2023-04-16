@@ -1,18 +1,16 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Component
+@Qualifier("memoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
-    private static final LocalDate BEGIN_FILMS = LocalDate.of(1895,12,28);
-    private static final Logger log = LoggerFactory.getLogger(InMemoryFilmStorage.class);
+
     private final Map<Integer,Film> films = new HashMap<>();
     private int idFilm = 1;
 
@@ -60,6 +58,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         log.debug("Фильм \"{}\" (id №{}) получен", films.get(id).getName(),id);
         return films.get(id);
     }
+
+
+
+
+
     private boolean isValidate(Film film) {
         if (film.getReleaseDate().isBefore(BEGIN_FILMS)) {
             throw new ValidationException("Дата релиза некорректно указана (id Фильма № "+ film.getId() + " )");

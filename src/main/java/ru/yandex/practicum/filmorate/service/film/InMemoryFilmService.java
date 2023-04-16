@@ -1,8 +1,7 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.film;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -13,16 +12,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class FilmService {
+@Qualifier("memoryFilmService")
+public class InMemoryFilmService implements FilmService {
+
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private static final Logger log = LoggerFactory.getLogger(FilmService.class);
+
     @Autowired
-    public FilmService(FilmStorage filmStorage,UserStorage userStorage){
+    public InMemoryFilmService(@Qualifier("memoryFilmStorage") FilmStorage filmStorage, @Qualifier("memoryUserStorage") UserStorage userStorage){
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
 
+    @Override
     public List<Integer> addLike(Integer idFilm, Integer idUser) {
         log.trace("Добавление лайка");
         Film film = filmStorage.get(idFilm);
@@ -33,6 +35,7 @@ public class FilmService {
         return new ArrayList<>(film.getLikes());
     }
 
+    @Override
     public List<Integer> removeLike(Integer idFilm, Integer idUser) {
         log.trace("Удаление лайка");
         Film film = filmStorage.get(idFilm);
@@ -43,6 +46,7 @@ public class FilmService {
         return new ArrayList<>(film.getLikes());
     }
 
+    @Override
     public List<Film> bestFilms(Integer count) {
         log.trace("Вывод лучших фильмов");
         return filmStorage.getAll().stream()

@@ -4,7 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.user.InMemoryUserService;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -63,7 +64,7 @@ public class UserControllerTest {
     public void birthdayUserTest() throws ValidationException {
 
         UserStorage userStorage = new InMemoryUserStorage();
-        UserService userService = new UserService(userStorage);
+        UserService userService = new InMemoryUserService(userStorage);
         UserController userController = new UserController(userStorage,userService);
 
 
@@ -84,7 +85,7 @@ public class UserControllerTest {
     public void nameUserTest() throws ValidationException {
 
         UserStorage userStorage = new InMemoryUserStorage();
-        UserService userService = new UserService(userStorage);
+        UserService userService = new InMemoryUserService(userStorage);
         UserController userController = new UserController(userStorage,userService);
 
         User userAddTrue = userController.add(user);
