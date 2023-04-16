@@ -34,12 +34,12 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film film ) {
+    public Film update(@Valid @RequestBody Film film) {
         return filmStorage.update(film);
     }
 
     @GetMapping ("/{id}")
-    public Film get(@PathVariable Integer id){
+    public Film get(@PathVariable Integer id) {
         return filmStorage.get(id);
     }
 
