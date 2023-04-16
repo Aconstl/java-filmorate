@@ -10,9 +10,9 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service ("dbFilmService")
+@Service("dbFilmService")
 @RequiredArgsConstructor
-public class FilmDBService implements  FilmService {
+public class FilmDBService implements FilmService {
 
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
@@ -25,9 +25,9 @@ public class FilmDBService implements  FilmService {
 
         if (isValid(idUser)) {
             //КОД ДОБАВЛЕНИЯ В БД
-            jdbcTemplate.update("INSERT INTO LIKES (FILM_ID,USER_ID) VALUES (?,?)",idFilm,idUser);
+            jdbcTemplate.update("INSERT INTO LIKES (FILM_ID,USER_ID) VALUES (?,?)", idFilm, idUser);
 
-            log.debug("Пользователь с id №{} поставил лайк фильму \"{}\" (id№ {})", idUser,film.getName(),idFilm);
+            log.debug("Пользователь с id №{} поставил лайк фильму \"{}\" (id№ {})", idUser, film.getName(), idFilm);
         }
         return new ArrayList<>(film.getLikes());
     }
@@ -38,9 +38,9 @@ public class FilmDBService implements  FilmService {
         Film film = filmStorage.get(idFilm);
         if (isValid(idUser)) {
             //КОД УДАЛЕНИЯ В БД
-            jdbcTemplate.update( "DELETE FROM LIKES WHERE FILM_ID =? AND USER_ID =?", idFilm,idUser);
+            jdbcTemplate.update("DELETE FROM LIKES WHERE FILM_ID =? AND USER_ID =?", idFilm, idUser);
 
-            log.debug("Пользователь с id №{} убрал лайк фильму \"{}\" (id№ {})", idUser,film.getName(),idFilm);
+            log.debug("Пользователь с id №{} убрал лайк фильму \"{}\" (id№ {})", idUser, film.getName(), idFilm);
         }
         return new ArrayList<>(film.getLikes());
     }

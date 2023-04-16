@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Component ("dbFilmStorage")
+@Component("dbFilmStorage")
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -28,11 +28,11 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getAll() {
         log.trace("Вывод списка всех фильмов");
-        return  jdbcTemplate.query("SELECT * FROM films", (rs, rowNum) -> makeFilm(rs));
+        return jdbcTemplate.query("SELECT * FROM films", (rs, rowNum) -> makeFilm(rs));
     }
 
     @Override
-    public Film add(Film film){
+    public Film add(Film film) {
         log.trace("Добавление нового фильма");
         if (isValidate(film)) {
             if (film.getLikes() == null) {
@@ -41,7 +41,7 @@ public class FilmDbStorage implements FilmStorage {
 
             jdbcTemplate.update("INSERT INTO FILMS (NAME,DESCRIPRION,RELEASEDATA,DURATION,MPA) " +
                             "VALUES (?,?,?,?,?)", film.getName(), film.getDescription(),
-                            film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
+                    film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
 
             film.setId(getMaxIdFilm());
             if (film.getGenres() != null) {
@@ -50,22 +50,23 @@ public class FilmDbStorage implements FilmStorage {
                 film.setGenres(new HashSet<>());
             }
         }
-        log.debug("Фильм \"{}\" (id №{}) добавлен", film.getName(),film.getId());
+        log.debug("Фильм \"{}\" (id №{}) добавлен", film.getName(), film.getId());
         return get(film.getId());
     }
+
     @Override
     public Film update(Film film) {
         log.trace("Обновление фильма");
         if (film.getId() == 0) {
             throw new IllegalArgumentException("Фильм c id № " + 0 + " не существует");
-        } else if (get(film.getId())!=null && isValidate(film)) {
+        } else if (get(film.getId()) != null && isValidate(film)) {
 
             disconnectFilmGenre(film);
 
             jdbcTemplate.update("UPDATE FILMS " +
-                "SET NAME = ?, DESCRIPRION = ?, RELEASEDATA = ?, DURATION = ?, MPA = ? WHERE FILM_ID = ? ",
-                film.getName(),film.getDescription(),film.getReleaseDate(), film.getDuration(),
-                film.getMpa().getId(), film.getId());
+                            "SET NAME = ?, DESCRIPRION = ?, RELEASEDATA = ?, DURATION = ?, MPA = ? WHERE FILM_ID = ? ",
+                    film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
+                    film.getMpa().getId(), film.getId());
 
             if (film.getGenres() != null) {
                 connectFilmGenre(film);
@@ -73,17 +74,17 @@ public class FilmDbStorage implements FilmStorage {
                 film.setGenres(new HashSet<>());
             }
         }
-        log.debug("Фильм \"{}\" (id №{}) обновлен", film.getName(),film.getId());
+        log.debug("Фильм \"{}\" (id №{}) обновлен", film.getName(), film.getId());
         return get(film.getId());
     }
 
     @Override
-    public Film get (Integer id) {
+    public Film get(Integer id) {
         log.trace("Получение фильма");
         if (id == null) {
             throw new NullPointerException("ID фильма указан неверно");
         }
-        List <Film> films = jdbcTemplate.query("SELECT * FROM films WHERE FILM_ID=?", (rs, rowNum) -> makeFilm(rs), id);
+        List<Film> films = jdbcTemplate.query("SELECT * FROM films WHERE FILM_ID=?", (rs, rowNum) -> makeFilm(rs), id);
         if (films.size() == 1) {
             log.debug("Фильм с id №{} получен", id);
             return films.get(0);
@@ -111,15 +112,15 @@ public class FilmDbStorage implements FilmStorage {
                 "\tSELECT gf.GENRE_ID\n" +
                 "\tFROM GENRE_FILM AS gf \n" +
                 "\tWHERE gf.Film_id = ?)";
-        List <Genre> genres = jdbcTemplate.query(sqlGenre,
-                (rs, rowNum) -> new Genre(rs.getInt("GENRE_ID"),rs.getString("NAME")),
+        List<Genre> genres = jdbcTemplate.query(sqlGenre,
+                (rs, rowNum) -> new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME")),
                 film.getId());
         film.setGenres(new HashSet<>(genres));
 
         String sqlLikes = "SELECT USER_ID \n" +
                 "\tFROM LIKES l \n" +
                 "\tWHERE FILM_ID  = ?";
-        Set <Integer> likes = new HashSet<>(jdbcTemplate.query(sqlLikes,
+        Set<Integer> likes = new HashSet<>(jdbcTemplate.query(sqlLikes,
                 (rs, rowNum) -> rs.getInt("USER_ID"), film.getId()));
         film.setLikes(likes);
 
@@ -132,16 +133,16 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY FILM_ID DESC \n" +
                 "LIMIT 1";
 
-        List <Integer> id = jdbcTemplate.query(sqlgetId, (rs, rowNum) -> rs.getInt("FILM_ID"));
+        List<Integer> id = jdbcTemplate.query(sqlgetId, (rs, rowNum) -> rs.getInt("FILM_ID"));
         return id.get(0);
     }
 
     private void disconnectFilmGenre(Film film) {
-            jdbcTemplate.update("DELETE FROM GENRE_FILM WHERE FILM_ID = ?", film.getId());
+        jdbcTemplate.update("DELETE FROM GENRE_FILM WHERE FILM_ID = ?", film.getId());
         log.trace("Связь жанров в фильме id №{} разорвана", film.getId());
     }
 
-    private void connectFilmGenre(Film film){
+    private void connectFilmGenre(Film film) {
         for (Genre genre : film.getGenres()) {
             jdbcTemplate.update("INSERT INTO GENRE_FILM (FILM_ID, GENRE_ID) VALUES ( ?,? )",
                     film.getId(), genre.getId());

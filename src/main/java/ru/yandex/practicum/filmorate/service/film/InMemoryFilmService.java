@@ -19,7 +19,7 @@ public class InMemoryFilmService implements FilmService {
     private final UserStorage userStorage;
 
     @Autowired
-    public InMemoryFilmService(@Qualifier("memoryFilmStorage") FilmStorage filmStorage, @Qualifier("memoryUserStorage") UserStorage userStorage){
+    public InMemoryFilmService(@Qualifier("memoryFilmStorage") FilmStorage filmStorage, @Qualifier("memoryUserStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -30,7 +30,7 @@ public class InMemoryFilmService implements FilmService {
         Film film = filmStorage.get(idFilm);
         if (isValid(idUser)) {
             film.getLikes().add(idUser);
-            log.debug("Пользователь с id №{} поставил лайк фильму \"{}\" (id№ {})", idUser,film.getName(),idFilm);
+            log.debug("Пользователь с id №{} поставил лайк фильму \"{}\" (id№ {})", idUser, film.getName(), idFilm);
         }
         return new ArrayList<>(film.getLikes());
     }
@@ -41,7 +41,7 @@ public class InMemoryFilmService implements FilmService {
         Film film = filmStorage.get(idFilm);
         if (isValid(idUser)) {
             film.getLikes().remove(idUser);
-            log.debug("Пользователь с id №{} убрал лайк фильму \"{}\" (id№ {})", idUser,film.getName(),idFilm);
+            log.debug("Пользователь с id №{} убрал лайк фильму \"{}\" (id№ {})", idUser, film.getName(), idFilm);
         }
         return new ArrayList<>(film.getLikes());
     }

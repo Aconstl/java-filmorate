@@ -11,13 +11,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Qualifier ("memoryUserService")
+@Qualifier("memoryUserService")
 public class InMemoryUserService implements UserService {
     private final UserStorage userStorage;
 
 
     @Autowired
-    public InMemoryUserService(@Qualifier("memoryUserStorage") UserStorage userStorage){
+    public InMemoryUserService(@Qualifier("memoryUserStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -25,15 +25,15 @@ public class InMemoryUserService implements UserService {
         log.trace("Добавление в друзья");
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
-        if (isNotEquals(user1,user2)) {
+        if (isNotEquals(user1, user2)) {
             boolean isMutually = false;
             if (user2.getFriends().containsKey(user1.getId())) {
-                user2.getFriends().put(user1.getId(),true);
+                user2.getFriends().put(user1.getId(), true);
                 isMutually = true;
             }
-            user1.getFriends().put(user2.getId(),isMutually);
+            user1.getFriends().put(user2.getId(), isMutually);
 
-            log.debug("Пользователи с id №{} и №{} стали друзьями", id,friendId);
+            log.debug("Пользователи с id №{} и №{} стали друзьями", id, friendId);
         }
         return new ArrayList<>(user1.getFriends().keySet());
     }
@@ -42,10 +42,10 @@ public class InMemoryUserService implements UserService {
         log.trace("Удаление из друзей");
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
-        if (isNotEquals(user1,user2)) {
+        if (isNotEquals(user1, user2)) {
             user1.getFriends().remove(user2.getId());
             user2.getFriends().remove(user1.getId());
-            log.debug("Пользователи с id №{} и №{} перестали быть друзьями", id,friendId);
+            log.debug("Пользователи с id №{} и №{} перестали быть друзьями", id, friendId);
         }
         return new ArrayList<>(user1.getFriends().keySet());
     }
@@ -55,7 +55,7 @@ public class InMemoryUserService implements UserService {
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
         List<User> JointFriends = new ArrayList<>();
-        if (isNotEquals(user1,user2)) {
+        if (isNotEquals(user1, user2)) {
             List<Integer> joint = user1.getFriends().entrySet().stream()
                     .filter(Map.Entry::getValue)
                     .map(Map.Entry::getKey)
@@ -68,14 +68,14 @@ public class InMemoryUserService implements UserService {
             for (Integer idUser : joint) {
                 JointFriends.add(userStorage.get(idUser));
             }
-            log.debug("Выведены общие друзья пользователей с id №{} и №{}", id,friendId);
+            log.debug("Выведены общие друзья пользователей с id №{} и №{}", id, friendId);
         }
         return JointFriends;
     }
 
-    private boolean isNotEquals(User user1,User user2) {
+    private boolean isNotEquals(User user1, User user2) {
         if (user1.equals(user2)) {
-            throw new ValidationException("Пользователь не может совершать действие с самим собой (id № "+ user1.getId() + " )");
+            throw new ValidationException("Пользователь не может совершать действие с самим собой (id № " + user1.getId() + " )");
         }
         return true;
     }

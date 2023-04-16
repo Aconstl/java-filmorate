@@ -22,6 +22,6 @@ public class User {
     private String name = "";
     @NotNull
     private LocalDate birthday;
-    private HashMap<Integer,Boolean> friends;
+    private HashMap<Integer, Boolean> friends;
 
 }

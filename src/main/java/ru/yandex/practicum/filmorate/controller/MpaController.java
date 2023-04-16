@@ -24,7 +24,7 @@ public class MpaController {
         return dbMpa.getAll();
     }
 
-    @GetMapping ("/{id}")
+    @GetMapping("/{id}")
     public Mpa get(@PathVariable Integer id) {
         return dbMpa.get(id);
     }

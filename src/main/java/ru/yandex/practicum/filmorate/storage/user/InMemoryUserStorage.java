@@ -53,7 +53,7 @@ public class InMemoryUserStorage implements UserStorage {
                 log.warn("Пользователь id № {} не имеет имя, принят login пользователя \"{}\"", user.getId(), user.getLogin());
                 user.setName(user.getLogin());
             }
-            Map<Integer,Boolean> friendsOldVersionUser = users.get(user.getId()).getFriends();
+            Map<Integer, Boolean> friendsOldVersionUser = users.get(user.getId()).getFriends();
             user.setFriends(new HashMap<>(friendsOldVersionUser));
             users.put(user.getId(), user);
             log.debug("Данные пользователя id № {} обновлены ", user.getId());
@@ -62,26 +62,26 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User get (Integer id){
+    public User get(Integer id) {
         log.trace("Получение пользователя");
         if (id == null) {
             throw new NullPointerException("ID пользователя указан неверно");
-        } else if (!users.containsKey(id)){
+        } else if (!users.containsKey(id)) {
             throw new IllegalArgumentException("Пользователь c ID № " + id + " не найден");
         }
         log.debug("Пользователь с id №{} получен", users.get(id).getName());
-        return  users.get(id);
+        return users.get(id);
     }
 
     @Override
-    public List<User> getFriends(Integer id){
+    public List<User> getFriends(Integer id) {
         log.trace("Вывод друзей");
         User user = this.get(id);
-        List <Integer> listIdFriends = new ArrayList<>(user.getFriends().keySet());
+        List<Integer> listIdFriends = new ArrayList<>(user.getFriends().keySet());
         List<User> listFriends = new ArrayList<>();
         for (Integer idFriend : listIdFriends) {
             if (!users.containsKey(idFriend)) {
-                throw new IllegalArgumentException("Пользователь с id "+ idFriend + "имеется в списке друзей, но не в общем списке");
+                throw new IllegalArgumentException("Пользователь с id " + idFriend + "имеется в списке друзей, но не в общем списке");
             }
             listFriends.add(users.get(idFriend));
         }

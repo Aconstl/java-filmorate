@@ -23,7 +23,7 @@ public class GenreController {
         return dbGenre.getAll();
     }
 
-    @GetMapping ("/{id}")
+    @GetMapping("/{id}")
     public Genre get(@PathVariable Integer id) {
         return dbGenre.get(id);
     }

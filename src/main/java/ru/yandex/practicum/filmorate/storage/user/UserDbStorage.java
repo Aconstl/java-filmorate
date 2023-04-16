@@ -19,13 +19,14 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate =jdbcTemplate;
+        this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public List<User> getAll() {
         log.trace("Вывод списка всех пользователей");
 
-        return  jdbcTemplate.query("SELECT * FROM users", (rs, rowNum) -> makeUser(rs));
+        return jdbcTemplate.query("SELECT * FROM users", (rs, rowNum) -> makeUser(rs));
     }
 
     @Override
@@ -38,7 +39,7 @@ public class UserDbStorage implements UserStorage {
             }
 
             jdbcTemplate.update("INSERT INTO USERS (EMAIL,LOGIN,NAME,BIRTHDAY) VALUES (?,?,?,?)",
-                    user.getEmail(), user.getLogin(), user.getName(),user.getBirthday());
+                    user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
 
             user.setId(getMaxIdUser());
         }
@@ -61,7 +62,7 @@ public class UserDbStorage implements UserStorage {
 
             jdbcTemplate.update("UPDATE USERS " +
                             "SET EMAIL = ?, LOGIN = ?, NAME = ?, BIRTHDAY = ? WHERE USER_ID = ? ",
-                            user.getEmail(), user.getLogin(),user.getName(), user.getBirthday(), user.getId());
+                    user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
 
             log.debug("Данные пользователя id № {} обновлены ", user.getId());
         }
@@ -69,12 +70,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User get (Integer id){
+    public User get(Integer id) {
         log.trace("Получение пользователя");
         if (id == null) {
             throw new NullPointerException("ID пользователя указан неверно");
         }
-        List <User> users =  jdbcTemplate.query("SELECT * FROM users WHERE USER_ID=?", (rs, rowNum) -> makeUser(rs), id);
+        List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE USER_ID=?", (rs, rowNum) -> makeUser(rs), id);
         if (users.size() == 1) {
             log.debug("Пользователь с id №{} получен", id);
             return users.get(0);
@@ -120,10 +121,10 @@ public class UserDbStorage implements UserStorage {
                 "\tWHERE USERFIRST_ID = ?";
 
         HashMap<Integer, Boolean> map = new HashMap<>();
-        SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends,user.getId());
+        SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends, user.getId());
         //ВОЗМОЖНА ОШИБКА?!
-        while(rsMap.next()) {
-            map.put(rsMap.getInt("USERSECOND_ID"),rsMap.getBoolean("IS_CONFIRM"));
+        while (rsMap.next()) {
+            map.put(rsMap.getInt("USERSECOND_ID"), rsMap.getBoolean("IS_CONFIRM"));
         }
 
 
@@ -139,9 +140,10 @@ public class UserDbStorage implements UserStorage {
                 "ORDER BY USER_ID DESC \n" +
                 "LIMIT 1";
 
-        List <Integer> id = jdbcTemplate.query(sqlgetId, (rs, rowNum) -> rs.getInt("USER_ID"));
+        List<Integer> id = jdbcTemplate.query(sqlgetId, (rs, rowNum) -> rs.getInt("USER_ID"));
         return id.get(0);
     }
+
     private boolean isValidate(User user) {
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем (пользователь № " + user.getId() + ")");

@@ -17,7 +17,7 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class FilmController {
 
-    @Qualifier ("dbFilmStorage")
+    @Qualifier("dbFilmStorage")
     private final FilmStorage filmStorage;
 
     @Qualifier("dbFilmService")
@@ -38,22 +38,22 @@ public class FilmController {
         return filmStorage.update(film);
     }
 
-    @GetMapping ("/{id}")
+    @GetMapping("/{id}")
     public Film get(@PathVariable Integer id) {
         return filmStorage.get(id);
     }
 
-    @PutMapping ("/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public List<Integer> putLikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
-        return filmService.addLike(id,userId);
+        return filmService.addLike(id, userId);
     }
 
-    @DeleteMapping ("/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public List<Integer> removeLikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
-        return filmService.removeLike(id,userId);
+        return filmService.removeLike(id, userId);
     }
 
-    @GetMapping ("/popular")
+    @GetMapping("/popular")
     public List<Film> bestFilms(@RequestParam(value = "count", defaultValue = "10") Integer count) {
         return filmService.bestFilms(count);
     }

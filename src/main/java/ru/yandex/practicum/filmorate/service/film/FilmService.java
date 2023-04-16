@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface FilmService {
     Logger log = LoggerFactory.getLogger(FilmService.class);
+
     List<Integer> addLike(Integer idFilm, Integer idUser);
 
     List<Integer> removeLike(Integer idFilm, Integer idUser);

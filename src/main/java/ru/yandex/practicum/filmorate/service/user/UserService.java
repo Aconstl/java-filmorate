@@ -10,6 +10,8 @@ public interface UserService {
     Logger log = LoggerFactory.getLogger(UserService.class);
 
     List<Integer> addFriends(Integer id, Integer friendId);
+
     List<Integer> removeFriend(Integer id, Integer friendId);
+
     List<User> getJointFriends(Integer id, Integer friendId);
 }
