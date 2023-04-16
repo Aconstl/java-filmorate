@@ -54,7 +54,7 @@ public class InMemoryUserService implements UserService {
         log.trace("Вывод общих друзей");
         User user1 = userStorage.get(id);
         User user2 = userStorage.get(friendId);
-        List<User> JointFriends = new ArrayList<>();
+        List<User> jointFriends = new ArrayList<>();
         if (isNotEquals(user1, user2)) {
             List<Integer> joint = user1.getFriends().entrySet().stream()
                     .filter(Map.Entry::getValue)
@@ -66,11 +66,11 @@ public class InMemoryUserService implements UserService {
                     .collect(Collectors.toList());
             joint.retainAll(jointFriend);
             for (Integer idUser : joint) {
-                JointFriends.add(userStorage.get(idUser));
+                jointFriends.add(userStorage.get(idUser));
             }
             log.debug("Выведены общие друзья пользователей с id №{} и №{}", id, friendId);
         }
-        return JointFriends;
+        return jointFriends;
     }
 
     private boolean isNotEquals(User user1, User user2) {
