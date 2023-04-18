@@ -15,8 +15,11 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
@@ -92,4 +95,32 @@ public class UserControllerTest {
         assertEquals(userAddTrue1.getName(), user.getLogin());
     }
 
+    @Test
+    public void testUser() {
+        User user = userController.add(User.builder()
+                .name("Пользователь1")
+                .email("mail@mail.ru")
+                .login("login1")
+                .birthday(LocalDate.of(1895, 12, 28))
+                .build());
+
+        assertThat(user.toString(), containsString("Пользователь1"));
+
+        User film1 = userController.get(user.getId());
+        assertThat(film1.toString(), containsString("Пользователь1"));
+
+        List<User> users = userController.getAll();
+        assertThat(users.toString(), containsString("Пользователь1"));
+
+
+        User userUPD = userController.update(User.builder()
+                .id(1)
+                .name("ПользовательОбновленный")
+                .email("mail@mail.ru")
+                .login("login1")
+                .birthday(LocalDate.of(1895, 12, 28))
+                .build());
+
+        assertThat(userUPD.toString(), containsString("ПользовательОбновленный"));
+    }
 }
