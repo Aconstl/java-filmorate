@@ -122,14 +122,10 @@ public class UserDbStorage implements UserStorage {
 
         HashMap<Integer, Boolean> map = new HashMap<>();
         SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends, user.getId());
-        //ВОЗМОЖНА ОШИБКА?!
         while (rsMap.next()) {
             map.put(rsMap.getInt("USERSECOND_ID"), rsMap.getBoolean("IS_CONFIRM"));
         }
-
-
         user.setFriends(map);
-
 
         return user;
     }
@@ -151,4 +147,34 @@ public class UserDbStorage implements UserStorage {
         return true;
     }
 
+    public void addFriends(Integer id, Integer friendId, boolean isMutually) {
+        if (isMutually) {
+            jdbcTemplate.update("DELETE FROM FRIENDS WHERE USERFIRST_ID = ? AND USERSECOND_ID = ?", friendId, id);
+            String sqlAddFirst = "INSERT INTO FRIENDS (USERFIRST_ID,USERSECOND_ID,IS_CONFIRM)" +
+                    "VALUES (?,?,TRUE),\n" +
+                    "(?,?,TRUE);";
+            jdbcTemplate.update(sqlAddFirst, id, friendId, friendId, id);
+        } else {
+            String sqlAddFirst = "INSERT INTO FRIENDS (USERFIRST_ID,USERSECOND_ID,IS_CONFIRM)" +
+                    "VALUES (?,?,FALSE)";
+            jdbcTemplate.update(sqlAddFirst, id, friendId);
+        }
+    }
+
+    public void removeFriends(Integer id, Integer friendId) {
+        jdbcTemplate.update("DELETE FROM FRIENDS WHERE USERFIRST_ID = ? AND USERSECOND_ID = ?", id, friendId);
+        jdbcTemplate.update("DELETE FROM FRIENDS WHERE USERFIRST_ID = ? AND USERSECOND_ID = ?", friendId, id);
+    }
+
+    public List<User> getJointFriends(Integer id, Integer friendId) {
+        String sql = "SELECT *\n" +
+                "FROM USERS u \n" +
+                "WHERE USER_ID IN (\n" +
+                "SELECT f1.USERSECOND_ID \n" +
+                "\tFROM FRIENDS f1 \n" +
+                "\tINNER JOIN FRIENDS f2 ON f2.USERFIRST_ID = ? AND\n" +
+                "\t\tf2.USERSECOND_ID = f1.USERSECOND_ID  \n" +
+                "\t\tWHERE f1.USERFIRST_ID  = ? );";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id, friendId);
+    }
 }

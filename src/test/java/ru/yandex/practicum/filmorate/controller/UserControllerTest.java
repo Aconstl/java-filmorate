@@ -7,10 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.user.InMemoryUserService;
-import ru.yandex.practicum.filmorate.service.user.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -70,10 +66,6 @@ public class UserControllerTest {
 
     @Test
     public void birthdayUserTest() throws ValidationException {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserService userService = new InMemoryUserService(userStorage);
-        UserController userController = new UserController(userStorage, userService);
-
         User userAddTrue = userController.add(user);
         assertEquals(userAddTrue, user);
 

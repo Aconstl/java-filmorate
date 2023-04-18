@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
@@ -12,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.film.mpa.DbMpa;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,13 +21,6 @@ import java.util.Set;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-/*
-    @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-*/
 
     @Override
     public List<Film> getAll() {
@@ -160,4 +153,24 @@ public class FilmDbStorage implements FilmStorage {
         }
         return true;
     }
+
+    public void addLike(Integer idFilm, Integer idUser) {
+        jdbcTemplate.update("INSERT INTO LIKES (FILM_ID,USER_ID) VALUES (?,?)", idFilm, idUser);
+    }
+
+    public void removeLike(Integer idFilm, Integer idUser) {
+        jdbcTemplate.update("DELETE FROM LIKES WHERE FILM_ID =? AND USER_ID =?", idFilm, idUser);
+    }
+
+    public List<Film> bestFilms(Integer count) {
+        String sql = " SELECT f.*\n" +
+                "        FROM FILMS f\n" +
+                "        LEFT OUTER JOIN likes AS l ON f.FILM_ID = l.FILM_ID\n" +
+                "        GROUP BY f.FILM_ID\n" +
+                "        ORDER BY COUNT(l.USER_ID) DESC,\n" +
+                "        f.FILM_ID " +
+                "        LIMIT ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), count);
+    }
+
 }
