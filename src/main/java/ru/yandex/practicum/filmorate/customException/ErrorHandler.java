@@ -28,7 +28,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse otherException(final NullPointerException e) {
+    public ErrorResponse otherException(final Exception e) {
         log.error("Исключение: " + e.getMessage());
         return new ErrorResponse("Исключение: ", e.getMessage());
     }

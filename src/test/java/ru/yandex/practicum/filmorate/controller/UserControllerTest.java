@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controller.UserController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.InMemoryUserService;
@@ -15,13 +17,16 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@SpringBootTest
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserControllerTest {
 
+    private final UserController userController;
     private Validator validator;
     User user;
 
@@ -34,6 +39,7 @@ public class UserControllerTest {
                 .email("aconstl@gmail.com")
                 .login("mrAlex")
                 .name("alexey")
+                .friends(new HashMap<>())
                 .birthday(LocalDate.of(1998, 9, 11))
                 .build();
     }
@@ -64,11 +70,9 @@ public class UserControllerTest {
 
     @Test
     public void birthdayUserTest() throws ValidationException {
-
         UserStorage userStorage = new InMemoryUserStorage();
         UserService userService = new InMemoryUserService(userStorage);
         UserController userController = new UserController(userStorage, userService);
-
 
         User userAddTrue = userController.add(user);
         assertEquals(userAddTrue, user);
@@ -85,11 +89,6 @@ public class UserControllerTest {
 
     @Test
     public void nameUserTest() throws ValidationException {
-
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserService userService = new InMemoryUserService(userStorage);
-        UserController userController = new UserController(userStorage, userService);
-
         User userAddTrue = userController.add(user);
         assertEquals(userAddTrue.getName(), user.getName());
         assertEquals(userAddTrue, user);

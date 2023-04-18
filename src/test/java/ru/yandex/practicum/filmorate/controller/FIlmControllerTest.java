@@ -1,15 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
-import ru.yandex.practicum.filmorate.controller.FilmController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.customException.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.film.FilmService;
-import ru.yandex.practicum.filmorate.service.film.InMemoryFilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -19,9 +16,11 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@SpringBootTest
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FIlmControllerTest {
 
+    private final FilmController filmController;
     private Validator validator;
     Film film;
 
@@ -35,6 +34,7 @@ public class FIlmControllerTest {
                 .description("описание кино")
                 .releaseDate(LocalDate.of(1895, 12, 28))
                 .duration(20)
+                .mpa(new Mpa(1,"G"))
                 .build();
     }
 
@@ -66,10 +66,7 @@ public class FIlmControllerTest {
     @Test
     public void dataReliseFilmTest() throws ValidationException {
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        UserStorage userStorage = new InMemoryUserStorage();
-        FilmService filmService = new InMemoryFilmService(filmStorage, userStorage);
-        FilmController filmController = new FilmController(filmStorage, filmService);
+
 
         Film filmAddTrue = filmController.add(film);
         assertEquals(filmAddTrue, film);
