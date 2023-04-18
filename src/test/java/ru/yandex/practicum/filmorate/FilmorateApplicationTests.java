@@ -19,7 +19,7 @@ import java.util.List;
 
 @SpringBootTest
 @AutoConfigureDataCouchbase
-@RequiredArgsConstructor(onConstructor_= @Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
 	private final FilmController filmController;
 	private final UserController userController;
