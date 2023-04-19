@@ -14,21 +14,21 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse validateException (final ValidationException e) {
+    public ErrorResponse validateException(final ValidationException e) {
         log.error("Ошибка валидации: " + e.getMessage());
-        return new ErrorResponse ("Ошибка валидации: ", e.getMessage());
+        return new ErrorResponse("Ошибка валидации: ", e.getMessage());
     }
 
     @ExceptionHandler
-    @ResponseStatus (HttpStatus.NOT_FOUND)
-    public ErrorResponse notFoundException (final IllegalArgumentException e) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse notFoundException(final IllegalArgumentException e) {
         log.error("Ошибка ввода: " + e.getMessage());
         return new ErrorResponse("Ошибка ввода: ", e.getMessage());
     }
 
     @ExceptionHandler
-    @ResponseStatus (HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse otherException (final NullPointerException e) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse otherException(final Exception e) {
         log.error("Исключение: " + e.getMessage());
         return new ErrorResponse("Исключение: ", e.getMessage());
     }
